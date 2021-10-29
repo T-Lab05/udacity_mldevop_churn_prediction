@@ -1,6 +1,6 @@
-""" test script for churn_library.py
+""" Test script for churn_library.py
 
-This script tests functions defined in churn_library.py. The result will be 
+This script tests functions defined in churn_library.py. The result will be
 logged in `logs/churn_library.log`
 
 Authur: xxxxxxxx
@@ -19,7 +19,9 @@ from churn_library import (
     perform_feature_engineering,
     train_models
 )
+from constants import CATEGORY_LST, KEEP_COLS, RESPONSE
 
+# Set configuration for logging
 logging.basicConfig(
     filename='./logs/churn_library.log',
     level=logging.INFO,
@@ -32,7 +34,8 @@ os.environ['QT_QPA_PLATFORM'] = 'offscreen'
 
 def test_import(import_data):
     '''
-    test data import - this example is completed for you to assist with the other test functions
+    Test data import - This example is completed for you to assist with the 
+    other test functions.
     '''
     try:
         df = import_data("./data/bank_data.csv")
@@ -51,7 +54,7 @@ def test_import(import_data):
 
 def test_eda(perform_eda):
     '''
-    test perform eda function
+    Test perform eda function.
     '''
     df = import_data("./data/bank_data.csv")
     df = make_churn_col(df)
@@ -79,27 +82,20 @@ def test_eda(perform_eda):
 
 def test_encoder_helper(encoder_helper):
     '''
-    test encoder helper
+    Test encoder helper function.
     '''
     df = import_data("./data/bank_data.csv")
     df = make_churn_col(df)
 
     try:
-        category_lst = [
-            'Gender',
-            'Education_Level',
-            'Marital_Status',
-            'Income_Category',
-            'Card_Category'
-        ]
-        response = "Churn"
-        df = encoder_helper(df, category_lst, response)
+        df = encoder_helper(df, CATEGORY_LST, RESPONSE)
 
         # Check new columns are added for all category column with certain col
         # names
-        for cat in category_lst:
-            new_col = f"{cat}_{response}"
-            assert new_col in df.columns, f"The function didn't prepare new cols for {cat}"
+        for cat in CATEGORY_LST:
+            new_col = f"{cat}_{RESPONSE}"
+            assert new_col in df.columns, \
+                   f"The function didn't prepare new cols for {cat}"
         logging.info("Testing encoder_helper: SUCCESS")
     except AssertionError as err:
         logging.error(str(err))
@@ -107,28 +103,27 @@ def test_encoder_helper(encoder_helper):
 
 def test_perform_feature_engineering(perform_feature_engineering):
     '''
-    test perform_feature_engineering
+    Test perform_feature_engineering function.
     '''
     df = import_data("./data/bank_data.csv")
     df = make_churn_col(df)
-    response = "Churn"
-    # test the function is executed without an error
+    # Test the function is executed without an error
     try:
         X_train, X_test, y_train, y_test = perform_feature_engineering(
-            df, response)
+            df, RESPONSE)
     except BaseException:
         logging.error("perform_feature_engineering function causes an error")
 
-    # test four outputs are expected instances
+    # Test four outputs are expected instances
     try:
-        assert isinstance(
-            X_train, pd.DataFrame), "X_train is not an instance of pandas.DataFrame"
-        assert isinstance(
-            X_test, pd.DataFrame), "X_test is not an instance of pandas.DataFrame"
-        assert isinstance(
-            y_train, pd.Series), "y_train is not an instance pandas.Series"
-        assert isinstance(
-            y_test, pd.Series), "y_test is not an instance of pandas.Series"
+        assert isinstance(X_train, pd.DataFrame), \
+               "X_train is not an instance of pandas.DataFrame"
+        assert isinstance(X_test, pd.DataFrame), \
+                "X_test is not an instance of pandas.DataFrame"
+        assert isinstance(y_train, pd.Series), \
+                "y_train is not an instance pandas.Series"
+        assert isinstance(y_test, pd.Series), \
+                "y_test is not an instance of pandas.Series"
         logging.info("Testing perform_feature_engineering: SUCCESS")
     except AssertionError as err:
         logging.error(str(err))
@@ -136,21 +131,20 @@ def test_perform_feature_engineering(perform_feature_engineering):
 
 def test_train_models(train_models):
     '''
-    test train_models
+    Test train_models function.
     '''
     df = import_data("./data/bank_data.csv")
     df = make_churn_col(df)
-    response = "Churn"
     X_train, X_test, y_train, y_test = perform_feature_engineering(
-        df, response)
+        df, RESPONSE)
 
-    # test the function is executed without an error
+    # Test the function is executed without an error
     try:
         train_models(X_train, X_test, y_train, y_test)
     except BaseException as err:
         logging.error(f"train_models function causes an error: {str(err)}")
     try:
-        # test all images exist
+        # Test all images exist
         images = [
             "feature_importances.png",
             "logistic_results.png",
@@ -161,7 +155,7 @@ def test_train_models(train_models):
             image_pth = "images/results/" + image
             assert os.path.exists(image_pth), f"{image} doesn't exist"
 
-        # test all models exist
+        # Test all models exist
         models = ["logistic_model.pkl", "rfc_model.pkl"]
         for model in models:
             model_pth = "models/" + model

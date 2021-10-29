@@ -2,14 +2,15 @@
 
 This script provides the following functions:
 - preserve images for EDA `images/eda/*.png`
-- model building (logistic regression and random forest classifier) `models/*.pkl`
+- model building (logistic regression and random forest classifier)
+ `models/*.pkl`
 - preserve images/report for model metrics `images/results/*.png`
 
 Authur: xxxxxxxxx
 Created: 2021/10/28
 """
 
-# import libraries
+# Import libraries
 from sklearn.metrics import plot_roc_curve, classification_report
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
@@ -26,8 +27,7 @@ sns.set()
 
 
 def import_data(pth):
-    '''
-    returns dataframe for the csv found at pth
+    '''Returns dataframe for the csv found at pth.
 
     input:
             pth: a path to the csv
@@ -39,8 +39,8 @@ def import_data(pth):
 
 
 def make_churn_col(df):
-    '''
-    prepare 'Churn' column from 'Attrition_Flag' column
+    '''Prepare 'Churn' column from 'Attrition_Flag' column.
+    
     input:
             df: pandas dataframe
     output:
@@ -53,8 +53,8 @@ def make_churn_col(df):
 
 
 def perform_eda(df):
-    '''
-    perform eda on df and save figures to images folder
+    '''Perform eda on df and save figures to images folder
+    
     input:
             df: pandas dataframe
 
@@ -89,8 +89,9 @@ def perform_eda(df):
 
 def encoder_helper(df, category_lst, response):
     '''
-    helper function to turn each categorical column into a new column with
-    propotion of churn for each category - associated with cell 15 from the notebook
+    Helper function to turn each categorical column into a new column with
+    propotion of churn for each category - associated with cell 15 from 
+    the notebook.
 
     input:
             df: pandas dataframe
@@ -109,7 +110,8 @@ def encoder_helper(df, category_lst, response):
 
 
 def perform_feature_engineering(df, response):
-    '''
+    ''' A function for feature engineering.
+
     input:
               df: pandas dataframe
               response: string of response name [optional argument that could be
@@ -121,12 +123,12 @@ def perform_feature_engineering(df, response):
               y_train: y training data
               y_test: y testing data
     '''
-    # encoding category columns
+    # Encoding category columns
     df = encoder_helper(df, CATEGORY_LST, RESPONSE)
 
     # Select certains columns as features
     X = df[KEEP_COLS]
-    y = df[RESPONSE]
+    y = df[response]
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=42)
     return X_train, X_test, y_train, y_test
@@ -139,8 +141,9 @@ def classification_report_image(y_train,
                                 y_test_preds_lr,
                                 y_test_preds_rf):
     '''
-    produces classification report for training and testing results and stores
-    report as image in images folder
+    Produces classification report for training and testing results and stores
+    report as image in images folder.
+
     input:
             y_train: training response values
             y_test:  test response values
@@ -159,26 +162,32 @@ def classification_report_image(y_train,
 
     for ml, output, y_test_preds, y_train_preds in zip(
             model_labels, outputs, y_tests, y_trains):
-        output = "images/results/" + output 
+        output = "images/results/" + output
         plt.figure()
         plt.rc('figure', figsize=(8, 5))
-        plt.text(
-            0.01, 1.25, str(f'{ml} Train'), {
-                'fontsize': 10}, fontproperties='monospace')
-        plt.text(0.01, 0.05, str(classification_report(y_test, y_test_preds)), {
-                 'fontsize': 10}, fontproperties='monospace') 
-        plt.text(
-            0.01, 0.6, str(f'{ml} Test'), {
-                'fontsize': 10}, fontproperties='monospace')
-        plt.text(0.01, 0.7, str(classification_report(y_train, y_train_preds)), {
-                 'fontsize': 10}, fontproperties='monospace') 
+        plt.text(0.01, 1.25, 
+                str(f'{ml} Train'), 
+                {'fontsize': 10}, 
+                fontproperties='monospace')
+        plt.text(0.01, 0.05, 
+                str(classification_report(y_test, y_test_preds)),
+                {'fontsize': 10}, 
+                fontproperties='monospace')
+        plt.text(0.01, 0.6, 
+                str(f'{ml} Test'), 
+                {'fontsize': 10}, 
+                fontproperties='monospace')
+        plt.text(0.01, 0.7, 
+                str(classification_report(y_train, y_train_preds)),
+                {'fontsize': 10}, 
+                fontproperties='monospace')
         plt.axis('off')
         plt.savefig(f"{output}")
 
 
 def feature_importance_plot(model, X_data, output_pth):
-    '''
-    creates and stores the feature importances in pth
+    '''Creates and stores the feature importances in pth.
+    
     input:
             model: model object containing feature_importances_
             X_data: pandas dataframe of X values
@@ -206,8 +215,8 @@ def feature_importance_plot(model, X_data, output_pth):
 
 
 def train_models(X_train, X_test, y_train, y_test):
-    '''
-    train, store model results: images + scores, and store models
+    '''Train, store model results: images + scores, and store models
+    
     input:
               X_train: X training data
               X_test: X testing data
@@ -224,7 +233,7 @@ def train_models(X_train, X_test, y_train, y_test):
         'max_depth': [4, 5, 100],
         'criterion': ['gini', 'entropy']
     }
-    cv_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=5)  
+    cv_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=5)
     cv_rfc.fit(X_train, y_train)
     best_rf = cv_rfc.best_estimator_
     y_train_preds_rf = best_rf.predict(X_train)
@@ -238,17 +247,17 @@ def train_models(X_train, X_test, y_train, y_test):
     y_test_preds_lr = lrc.predict(X_test)
     joblib.dump(lrc, "models/logistic_model.pkl")
 
-    # plot feature importance
+    # Plot feature importance
     importance_image_pth = "images/results/feature_importances.png"
     feature_importance_plot(best_rf, X_train, importance_image_pth)
 
-    # plot ROC curve
+    # Plot ROC curve
     _, ax = plt.subplots(figsize=(15, 8))
     plot_roc_curve(lrc, X_test, y_test, ax=ax, alpha=0.8)
     plot_roc_curve(best_rf, X_test, y_test, ax=ax, alpha=0.8)
     plt.savefig("images/results/roc_curve_result.png")
 
-    # output classification report
+    # Output classification report
     classification_report_image(y_train,
                                 y_test,
                                 y_train_preds_lr,
