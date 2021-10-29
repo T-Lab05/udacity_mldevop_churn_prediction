@@ -264,3 +264,11 @@ def train_models(X_train, X_test, y_train, y_test):
                                 y_train_preds_rf,
                                 y_test_preds_lr,
                                 y_test_preds_rf)
+
+
+if __name__ == "__main__":
+    df = import_data("./data/bank_data.csv")
+    df = make_churn_col(df)
+    X_train, X_test, y_train, y_test = perform_feature_engineering(
+        df, RESPONSE)
+    train_models(X_train, X_test, y_train, y_test)
